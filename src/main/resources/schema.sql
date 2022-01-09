@@ -2,6 +2,17 @@ drop table if exists users;
 drop table if exists person;
 drop table if exists cars;
 drop table if exists comments;
+drop table if exists hashedUsers;
+drop table if exists user_to_roles;
+drop table if exists roles;
+drop table if exists address;
+drop table if exists permissions;
+drop table if exists role_to_permissions;
+drop table if exists delivery;
+drop table if exists food;
+drop table if exists restaurant_type;
+drop table if exists delivery_item;
+drop table if exists restaurant;
 
 create table users
 (
@@ -75,6 +86,7 @@ create table food
     restaurantId int          NOT NULL,
     PRIMARY KEY (ID)
 );
+
 
 create table restaurant_type
 (
