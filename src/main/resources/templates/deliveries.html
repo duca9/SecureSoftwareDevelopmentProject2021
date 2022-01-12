@@ -50,8 +50,9 @@
             tds[4].textContent = delivery.restaurantName;
             tds[5].textContent = delivery.restaurantType;
             tds[6].textContent = delivery.address;
-            tds[7].innerHTML = `<a href="/delivery?id=${delivery.id}">Details</a>`;
-
+            if(tds.item(7) != null) { // Column is present
+                tds[7].innerHTML = `<div> <a href="/delivery?id=${delivery.id}">Details</a> </div>`;
+            }
             const tbody = document.querySelector('tbody');
             tbody.appendChild(row);
         }
@@ -71,7 +72,7 @@
             <th scope="col">Restaurant</th>
             <th scope="col">Restaurant type</th>
             <th scope="col">Address</th>
-            <th></th>
+            <th sec:authorize="hasAuthority('DELIVERY_DETAILS_VIEW')"></th>
         </tr>
         </thead>
         <tbody id="carsTableContent">
@@ -83,7 +84,7 @@
             <td th:text="${deliveries.restaurantName}"></td>
             <td th:text="${deliveries.restaurantType}"></td>
             <td th:text="${deliveries.address}"></td>
-            <td><a th:href="@{/delivery(id=${deliveries.id})}">Details</a></td>
+            <td sec:authorize="hasAuthority('DELIVERY_DETAILS_VIEW')"><a th:href="@{/delivery(id=${deliveries.id})}">Details</a></td>
         </tr>
         </tbody>
     </table>
@@ -103,9 +104,8 @@
             <td>username</td>
             <td>restaurantName</td>
             <td>restaurantType</td>
-            <td>type</td>
             <td>address</td>
-            <td>details</td>
+            <td sec:authorize="hasAuthority('DELIVERY_DETAILS_VIEW')"></td>
         </tr>
     </template>
 </div>

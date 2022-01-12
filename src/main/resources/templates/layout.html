@@ -29,13 +29,16 @@
 <body>
 <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" th:href="@{/}">Deliveries</a>
+        <a sec:authorize="hasAuthority('DELIVERY_LIST_VIEW')" class="navbar-brand" th:href="@{/deliveries}">Deliveries</a>
         <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
+            <li sec:authorize="hasAuthority('ORDER_FOOD')" class="nav-item">
                 <a class="nav-link" th:href="@{/order}">New Order</a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/customers-and-restaurants}">Users</a>
+            <li sec:authorize="hasAuthority('USERS_LIST_VIEW')" class="nav-item">
+                <a class="nav-link" th:href="@{/customers}">Customers</a>
+            </li>
+            <li sec:authorize="hasAuthority('RESTAURANT_LIST_VIEW')" class="nav-item">
+                <a class="nav-link" th:href="@{/restaurants}">Restaurants</a>
             </li>
         </ul>
         <ul class="navbar-nav ml-auto">
@@ -50,7 +53,7 @@
 </main>
 <footer>
     <div class="footer-copyright text-center py-3">
-        © 2021 Copyright: <a th:href="@{/}">Order Search</a>
+        © 2021 Copyright: <a sec:authorize="hasAuthority('DELIVERY_LIST_VIEW')" th:href="@{/deliveries}">Order Search</a>
     </div>
 </footer>
 </body>

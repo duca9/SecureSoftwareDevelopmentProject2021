@@ -13,7 +13,7 @@
             fetch('/restaurant?id=' + restaurantId, {
                 method: 'DELETE'
             }).then(function () {
-                window.location.href = '/customers-and-restaurants';
+                window.location.href = '/restaurants';
             });
         }
     </script>
@@ -38,13 +38,16 @@
                 </select>
             </div>
             <input type="hidden" name="id" class="form-control" id="id" th:value="${restaurant.id}">
-            <button type="submit" class="btn btn-primary">Save</button>
+            <div sec:authorize="hasAuthority('RESTAURANT_EDIT')">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
         </form>
     </div>
-    <div class="row">
+    <div sec:authorize="hasAuthority('RESTAURANT_DELETE')" class="row">
         <div class="form-group">
             <button type="submit" class="btn btn-danger" id="deleteUser"
-                    th:onclick="'deleteRestaurant(\''+ ${restaurant.id} +'\')'">Delete</button>
+                    th:onclick="'deleteRestaurant(\''+ ${restaurant.id} +'\')'">Delete
+            </button>
         </div>
     </div>
 
