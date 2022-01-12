@@ -2,6 +2,7 @@ package com.zuehlke.securesoftwaredevelopment.controller;
 
 import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
 
+import com.zuehlke.securesoftwaredevelopment.config.CsrfHttpSessionListener;
 import com.zuehlke.securesoftwaredevelopment.domain.Address;
 import com.zuehlke.securesoftwaredevelopment.domain.CustomerUpdate;
 import com.zuehlke.securesoftwaredevelopment.domain.NewAddress;
@@ -9,9 +10,12 @@ import com.zuehlke.securesoftwaredevelopment.domain.RestaurantUpdate;
 import com.zuehlke.securesoftwaredevelopment.repository.CustomerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpSession;
 
 @Controller
 
@@ -54,7 +58,9 @@ public class CustomerController {
     }
 
     @GetMapping("/customer")
-    public String getCustomer(@RequestParam(name = "id", required = true) String id, Model model) {
+    public String getCustomer(@RequestParam(name = "id", required = true) String id, Model model, HttpSession session) {
+        String csrfToken = session.getAttribute(CsrfHttpSessionListener.CSRF_TOKEN).toString();
+        model.addAttribute(CsrfHttpSessionListener.CSRF_TOKEN, csrfToken);
         model.addAttribute("customer", customerRepository.getCustomer(id));
         model.addAttribute("addresses", customerRepository.getAddresses(id));
         return "customer";
@@ -67,7 +73,11 @@ public class CustomerController {
     }
 
     @PostMapping("/api/customer/update-customer")
-    public String updateCustomer(CustomerUpdate customerUpdate, Model model) {
+    public String updateCustomer(CustomerUpdate customerUpdate, Model model, HttpSession session, @RequestParam("csrfToken") String csrfTokenInRequest) {
+        String csrTokenInSession = session.getAttribute(CsrfHttpSessionListener.CSRF_TOKEN).toString();
+        if (!csrTokenInSession.equals(csrfTokenInRequest)) {
+            throw new AccessDeniedException("Forbidden");
+        }
         customerRepository.updateCustomer(customerUpdate);
         customersAndRestaurants(model);
         return "/customers-and-restaurants";
@@ -88,7 +98,7 @@ public class CustomerController {
     }
 
     @PostMapping("/customer/address")
-    public String putCustomerAddress(NewAddress newAddress, Model model){
+    public String putCustomerAddress(NewAddress newAddress, Model model) {
         customerRepository.putCustomerAddress(newAddress);
         customersAndRestaurants(model);
         return "/customers-and-restaurants";

@@ -10,10 +10,12 @@ import java.security.SecureRandom;
 
 @WebListener
 public class CsrfHttpSessionListener implements HttpSessionListener {
+    public static final String CSRF_TOKEN = "CSRF_TOKEN";
+
     @Override
     public void sessionCreated(HttpSessionEvent se) {
         String token = createToken();
-        se.getSession().setAttribute("CSRF_TOKEN", token);
+        se.getSession().setAttribute(CSRF_TOKEN, token);
     }
 
     private static String createToken() {
