@@ -10,7 +10,9 @@
     <title>Deliveries</title>
     <script>
         function deleteCustomer(customerId) {
-            fetch('/customer?id=' + customerId, {
+
+            let csrfToken = document.getElementById("csrfToken1").value;
+            fetch(`/customer?id=${customerId}&csrfToken=${csrfToken}`, {
                 method: 'DELETE'
             }).then(function () {
                 window.location.href = '/customers';
@@ -18,7 +20,8 @@
         }
 
         function deleteAddress(addressId) {
-            fetch('/customer/address?id=' + addressId, {
+            let csrfToken = document.getElementById("csrfToken1").value;
+            fetch(`/customer/address?id=${addressId}&csrfToken=${csrfToken}`, {
                 method: 'DELETE'
             }).then(function () {
                 window.location.href = '';
@@ -33,14 +36,16 @@
         <form method="POST" action="/api/customer/update-customer" class="col-5">
             <div class="form-group">
                 <label for="username">Username</label>
-                <input th:disabled="${not #authorization.expression('hasAuthority(''USERS_EDIT'')')}"  type="text" name="username" class="form-control" id="username" th:value="${customer.username}">
+                <input th:disabled="${not #authorization.expression('hasAuthority(''USERS_EDIT'')')}" type="text"
+                       name="username" class="form-control" id="username" th:value="${customer.username}">
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input th:disabled="${not #authorization.expression('hasAuthority(''USERS_EDIT'')')}" type="text" name="password" class="form-control" id="password" th:value="${customer.password}">
+                <input th:disabled="${not #authorization.expression('hasAuthority(''USERS_EDIT'')')}" type="text"
+                       name="password" class="form-control" id="password" th:value="${customer.password}">
             </div>
             <input type="hidden" name="id" class="form-control" id="id" th:value="${customer.id}">
-            <input type="hidden" name="csrfToken" class="form-control" id="csrfToken" th:value="${CSRF_TOKEN}">
+            <input type="hidden" name="csrfToken" class="form-control" id="csrfToken1" th:value="${CSRF_TOKEN}">
             <div sec:authorize="hasAuthority('USERS_EDIT')">
                 <button type="submit" class="btn btn-primary">Save</button>
             </div>
@@ -64,6 +69,7 @@
                 <td sec:authorize="hasAuthority('USERS_EDIT')">
                     <button class="btn btn-primary">Save</button>
                 </td>
+                <input type="hidden" name="csrfToken" class="form-control" id="csrfToken2" th:value="${CSRF_TOKEN}">
             </form>
             <td sec:authorize="hasAuthority('USERS_EDIT')">
                 <button class="btn btn-danger" th:onclick="'deleteAddress(\''+ ${address.id} +'\')'">Delete</button>
@@ -77,6 +83,7 @@
                 <tr>
                     <td><input name="name"></td>
                     <input type="hidden" name="userId" th:value="${customer.id}"/></td>
+                    <input type="hidden" name="csrfToken" class="form-control" id="csrfToken3" th:value="${CSRF_TOKEN}">
                     <td>
                         <button class="btn btn-primary">Save</button>
                     </td>
