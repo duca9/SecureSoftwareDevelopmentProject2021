@@ -12,8 +12,6 @@ import java.sql.*;
 public class HashedUserRepository {
 
     private static final Logger LOG = LoggerFactory.getLogger(HashedUserRepository.class);
-
-
     private final DataSource dataSource;
 
     public HashedUserRepository(DataSource dataSource) {
@@ -32,7 +30,7 @@ public class HashedUserRepository {
                 return new HashedUser(username, passwordHash, salt, totpKey);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn(String.format("Getting user with username %s failed", username));
         }
         return null;
     }
@@ -43,10 +41,9 @@ public class HashedUserRepository {
              PreparedStatement statement = connection.prepareStatement(sqlQuery)) {
             statement.setString(1, totpKey);
             statement.setString(2, username);
-
             statement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn(String.format("Saving TOTP key for user with username %s failed", username));
         }
     }
 }

@@ -34,4 +34,12 @@ public class CustomerUpdate {
     public void setId(int id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "CustomerUpdate{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                '}';
+    }
 }

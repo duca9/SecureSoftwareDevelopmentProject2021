@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.sql.SQLException;
 import java.util.List;
 
 @Controller
@@ -36,7 +35,7 @@ public class DeliveryController {
 
     @GetMapping("/delivery")
     @PreAuthorize("hasAuthority('DELIVERY_DETAILS_VIEW')")
-    public String showDelivery(@RequestParam(name ="id", required = true) String id, Model model) {
+    public String showDelivery(@RequestParam(name ="id") String id, Model model) {
         model.addAttribute("delivery", deliveryRepository.getDelivery(id));
         List<DeliveryDetail> details = deliveryRepository.getDeliveryDetails(id);
         model.addAttribute("details", details);
@@ -47,7 +46,7 @@ public class DeliveryController {
     @GetMapping(value = "/api/deliveries/search", produces = "application/json")
     @ResponseBody
     @PreAuthorize("hasAuthority('DELIVERY_LIST_VIEW')")
-    public List<ViewableDelivery> search(@RequestParam("query") String query) throws SQLException {
+    public List<ViewableDelivery> search(@RequestParam("query") String query) {
         return deliveryRepository.search(query);
     }
 

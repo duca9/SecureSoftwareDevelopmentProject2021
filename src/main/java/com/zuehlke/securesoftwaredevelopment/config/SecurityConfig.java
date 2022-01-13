@@ -1,6 +1,7 @@
 package com.zuehlke.securesoftwaredevelopment.config;
 
-import com.zuehlke.securesoftwaredevelopment.service.UserDetailsServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -13,12 +14,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SecurityConfig.class);
     private final DatabaseAuthenticationProvider databaseAuthenticationProvider;
-    private final UserDetailsServiceImpl userDetailsService;
 
-    public SecurityConfig(DatabaseAuthenticationProvider databaseAuthenticationProvider, UserDetailsServiceImpl userDetailsService) {
+    public SecurityConfig(DatabaseAuthenticationProvider databaseAuthenticationProvider) {
         this.databaseAuthenticationProvider = databaseAuthenticationProvider;
-        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -47,7 +47,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
-        auth.authenticationProvider(databaseAuthenticationProvider);
+        if (auth != null) {
+            auth.authenticationProvider(databaseAuthenticationProvider);
+            LOG.info("Auth provider configured successfully");
+        } else {
+            LOG.error("Auth provider is null");
+        }
     }
 
     @Bean

@@ -1,7 +1,9 @@
 package com.zuehlke.securesoftwaredevelopment.repository;
 
 import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
-import com.zuehlke.securesoftwaredevelopment.domain.*;
+import com.zuehlke.securesoftwaredevelopment.config.EntityChanged;
+import com.zuehlke.securesoftwaredevelopment.domain.Restaurant;
+import com.zuehlke.securesoftwaredevelopment.domain.RestaurantUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -19,29 +21,33 @@ import java.util.List;
 public class RestaurantRepository {
     private static final Logger LOG = LoggerFactory.getLogger(RestaurantRepository.class);
     private static final AuditLogger auditLogger = AuditLogger.getAuditLogger(RestaurantRepository.class);
-
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
     public RestaurantRepository(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-
     public List<Restaurant> getRestaurants() {
-        List<Restaurant> restaurants = new ArrayList<Restaurant>();
+        List<Restaurant> restaurants = new ArrayList<>();
         String query = "SELECT r.id, r.name, r.address, rt.name  FROM restaurant AS r JOIN restaurant_type AS rt ON r.typeId = rt.id ";
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement();
              ResultSet rs = statement.executeQuery(query)) {
-
             while (rs.next()) {
-                restaurants.add(createRestaurant(rs));
+                tryToAddNewRestaurant(restaurants, rs);
             }
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Getting restaurants failed");
         }
         return restaurants;
+    }
+
+    private void tryToAddNewRestaurant(List<Restaurant> restaurants, ResultSet rs) {
+        try {
+            restaurants.add(createRestaurant(rs));
+        } catch (SQLException e) {
+            LOG.warn("Creating restaurant from result set failed");
+        }
     }
 
     private Restaurant createRestaurant(ResultSet rs) throws SQLException {
@@ -49,12 +55,10 @@ public class RestaurantRepository {
         String name = rs.getString(2);
         String address = rs.getString(3);
         String type = rs.getString(4);
-
         return new Restaurant(id, name, address, type);
     }
 
-
-    public Object getRestaurant(String id) {
+    public Restaurant getRestaurant(String id) {
         String query = "SELECT r.id, r.name, r.address, rt.name  FROM restaurant AS r JOIN restaurant_type AS rt ON r.typeId = rt.id WHERE r.id=" + id;
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement();
@@ -63,9 +67,8 @@ public class RestaurantRepository {
             if (rs.next()) {
                 return createRestaurant(rs);
             }
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn(String.format("Getting restaurant with id %s failed", id));
         }
         return null;
     }
@@ -75,9 +78,15 @@ public class RestaurantRepository {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()
         ) {
+            Restaurant oldRestaurant = getRestaurant(String.valueOf(id));
             statement.executeUpdate(query);
+            LOG.info("Restaurant with id {} successfully deleted", id);
+            auditLogger.auditChange(
+                    new EntityChanged("restaurant.Delete",
+                            String.valueOf(oldRestaurant),
+                            "--deleted--"));
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn(String.format("Deleting restaurant with id %s failed", id));
         }
     }
 
@@ -86,12 +95,15 @@ public class RestaurantRepository {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()
         ) {
+            Restaurant restaurant = getRestaurant(String.valueOf(restaurantUpdate.getId()));
             statement.executeUpdate(query);
+            LOG.info("Restaurant with id {} successfully updated", restaurantUpdate.getId());
+            auditLogger.auditChange(
+                    new EntityChanged("restaurant.update",
+                            String.valueOf(restaurant),
+                            String.valueOf(restaurantUpdate)));
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn(String.format("Updating restaurant with id %s failed", restaurantUpdate.getId()));
         }
-
     }
-
-
 }

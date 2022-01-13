@@ -44,4 +44,14 @@ public class Restaurant {
     public void setRestaurantType(String restaurantType) {
         this.restaurantType = restaurantType;
     }
+
+    @Override
+    public String toString() {
+        return "Restaurant{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                ", restaurantType='" + restaurantType + '\'' +
+                '}';
+    }
 }

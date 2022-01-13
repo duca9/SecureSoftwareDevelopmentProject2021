@@ -44,4 +44,13 @@ public class RestaurantUpdate {
     public void setRestaurantType(int restaurantType) {
         this.restaurantType = restaurantType;
     }
+
+    @Override
+    public String toString() {
+        return "RestaurantUpdate{" +
+                ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                ", restaurantType=" + restaurantType +
+                '}';
+    }
 }

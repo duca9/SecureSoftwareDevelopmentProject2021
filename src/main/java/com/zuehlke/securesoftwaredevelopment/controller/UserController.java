@@ -1,7 +1,5 @@
 package com.zuehlke.securesoftwaredevelopment.controller;
 
-import com.zuehlke.securesoftwaredevelopment.config.AuditLogger;
-
 import com.zuehlke.securesoftwaredevelopment.config.CsrfHttpSessionListener;
 import com.zuehlke.securesoftwaredevelopment.domain.Address;
 import com.zuehlke.securesoftwaredevelopment.domain.CustomerUpdate;
@@ -9,14 +7,16 @@ import com.zuehlke.securesoftwaredevelopment.domain.NewAddress;
 import com.zuehlke.securesoftwaredevelopment.domain.RestaurantUpdate;
 import com.zuehlke.securesoftwaredevelopment.repository.CustomerRepository;
 import com.zuehlke.securesoftwaredevelopment.repository.RestaurantRepository;
-import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpSession;
 
@@ -24,7 +24,6 @@ import javax.servlet.http.HttpSession;
 public class UserController {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
-    private static final AuditLogger auditLogger = AuditLogger.getAuditLogger(UserController.class);
 
     private final CustomerRepository customerRepository;
     private final RestaurantRepository restaurantRepository;
@@ -51,15 +50,15 @@ public class UserController {
 
     @GetMapping("/restaurant")
     @PreAuthorize("hasAuthority('RESTAURANT_DETAILS_VIEW')")
-    public String getRestaurant(@RequestParam(name = "id", required = true) String id, Model model) {
+    public String getRestaurant(@RequestParam(name = "id") String id, Model model) {
         model.addAttribute("restaurant", restaurantRepository.getRestaurant(id));
         return "restaurant";
     }
 
     @DeleteMapping("/restaurant")
     @PreAuthorize("hasAuthority('RESTAURANT_DELETE')")
-    public String deleteRestaurant(@RequestParam(name = "id", required = true) String id) {
-        int identificator = Integer.valueOf(id);
+    public String deleteRestaurant(@RequestParam(name = "id") String id) {
+        int identificator = Integer.parseInt(id);
         restaurantRepository.deleteRestaurant(identificator);
         return "restaurants";
     }
@@ -74,7 +73,7 @@ public class UserController {
 
     @GetMapping("/customer")
     @PreAuthorize("hasAuthority('USERS_DETAILS_VIEW')")
-    public String getCustomer(@RequestParam(name = "id", required = true) String id, Model model, HttpSession session) {
+    public String getCustomer(@RequestParam(name = "id") String id, Model model, HttpSession session) {
         String csrfToken = session.getAttribute(CsrfHttpSessionListener.CSRF_TOKEN).toString();
         model.addAttribute(CsrfHttpSessionListener.CSRF_TOKEN, csrfToken);
         model.addAttribute("customer", customerRepository.getCustomer(id));
@@ -84,9 +83,10 @@ public class UserController {
 
     @DeleteMapping("/customer")
     @PreAuthorize("hasAnyAuthority('USERS_DELETE')")
-    public String deleteCustomer(HttpSession session, @RequestParam(name = "id", required = true) String id, @RequestParam(name = "csrfToken") String csrfTokenInRequest) {
+    public String deleteCustomer(HttpSession session, @RequestParam(name = "id") String id, @RequestParam(name = "csrfToken") String csrfTokenInRequest) {
         String csrTokenInSession = session.getAttribute(CsrfHttpSessionListener.CSRF_TOKEN).toString();
         if (!csrTokenInSession.equals(csrfTokenInRequest)) {
+            LOG.error("CSRF token mismatch");
             throw new AccessDeniedException("Forbidden");
         }
         customerRepository.deleteCustomer(id);
@@ -98,6 +98,7 @@ public class UserController {
     public String updateCustomer(CustomerUpdate customerUpdate, Model model, HttpSession session, @RequestParam(name = "csrfToken") String csrfTokenInRequest) {
         String csrTokenInSession = session.getAttribute(CsrfHttpSessionListener.CSRF_TOKEN).toString();
         if (!csrTokenInSession.equals(csrfTokenInRequest)) {
+            LOG.error("CSRF token mismatch");
             throw new AccessDeniedException("Forbidden");
         }
         customerRepository.updateCustomer(customerUpdate);
@@ -107,12 +108,13 @@ public class UserController {
 
     @DeleteMapping("/customer/address")
     @PreAuthorize("hasAuthority('USERS_EDIT')")
-    public String deleteCustomerAddress(HttpSession session, @RequestParam(name = "id", required = true) String id, @RequestParam(name = "csrfToken") String csrfTokenInRequest) {
+    public String deleteCustomerAddress(HttpSession session, @RequestParam(name = "id") String id, @RequestParam(name = "csrfToken") String csrfTokenInRequest) {
         String csrTokenInSession = session.getAttribute(CsrfHttpSessionListener.CSRF_TOKEN).toString();
         if (!csrTokenInSession.equals(csrfTokenInRequest)) {
+            LOG.error("CSRF token mismatch");
             throw new AccessDeniedException("Forbidden");
         }
-        int identificator = Integer.valueOf(id);
+        int identificator = Integer.parseInt(id);
         customerRepository.deleteCustomerAddress(identificator);
         return "customers";
     }
@@ -122,6 +124,7 @@ public class UserController {
     public String updateCustomerAddress(Address address, Model model, HttpSession session, @RequestParam(name = "csrfToken") String csrfTokenInRequest) {
         String csrTokenInSession = session.getAttribute(CsrfHttpSessionListener.CSRF_TOKEN).toString();
         if (!csrTokenInSession.equals(csrfTokenInRequest)) {
+            LOG.error("CSRF token mismatch");
             throw new AccessDeniedException("Forbidden");
         }
         customerRepository.updateCustomerAddress(address);
@@ -134,6 +137,7 @@ public class UserController {
     public String putCustomerAddress(NewAddress newAddress, Model model, HttpSession session, @RequestParam(name = "csrfToken") String csrfTokenInRequest) {
         String csrTokenInSession = session.getAttribute(CsrfHttpSessionListener.CSRF_TOKEN).toString();
         if (!csrTokenInSession.equals(csrfTokenInRequest)) {
+            LOG.error("CSRF token mismatch");
             throw new AccessDeniedException("Forbidden");
         }
         customerRepository.putCustomerAddress(newAddress);

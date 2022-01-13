@@ -25,11 +25,19 @@ public class PermissionService {
     }
 
     public List<Permission> get(int userId) {
-        List<Role> roles = roleRepository.findByUserId(userId);
         List<Permission> userPermissions = new ArrayList<>();
-        for (Role role : roles) {
-            List<Permission> rolePermissions = permissionRepository.findByRoleId(role.getId());
-            userPermissions.addAll(rolePermissions);
+        if (userId > 0) {
+            List<Role> roles = roleRepository.findByUserId(userId);
+            if (roles != null) {
+                for (Role role : roles) {
+                    List<Permission> rolePermissions = permissionRepository.findByRoleId(role.getId());
+                    userPermissions.addAll(rolePermissions);
+                }
+            } else {
+                LOG.error("Roles is null");
+            }
+        } else {
+            LOG.error("User id is less than 0");
         }
         return userPermissions;
     }

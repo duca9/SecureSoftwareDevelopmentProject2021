@@ -17,7 +17,6 @@ import java.util.List;
 public class RoleRepository {
 
     private static final Logger LOG = LoggerFactory.getLogger(RoleRepository.class);
-
     private final DataSource dataSource;
 
     public RoleRepository(DataSource dataSource) {
@@ -36,7 +35,7 @@ public class RoleRepository {
                 roles.add(new Role(id, name));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn(String.format("Finding user failed for user with id %s", userId));
         }
         return roles;
     }

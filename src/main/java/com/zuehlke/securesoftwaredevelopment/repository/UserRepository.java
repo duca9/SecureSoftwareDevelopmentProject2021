@@ -15,8 +15,7 @@ import java.sql.Statement;
 public class UserRepository {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserRepository.class);
-
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
     public UserRepository(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -34,7 +33,7 @@ public class UserRepository {
                 return new User(id, username1, password);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn(String.format("Getting users failed for user with username %s", username));
         }
         return null;
     }
@@ -46,19 +45,8 @@ public class UserRepository {
              ResultSet rs = statement.executeQuery(query)) {
             return rs.next();
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn(String.format("Checking credentials failed for username %s", username));
         }
         return false;
-    }
-
-    public void delete(int userId) {
-        String query = "DELETE FROM users WHERE id = " + userId;
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-        ) {
-            statement.executeUpdate(query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 }

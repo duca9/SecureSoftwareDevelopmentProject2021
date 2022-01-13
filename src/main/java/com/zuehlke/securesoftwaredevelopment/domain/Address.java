@@ -24,5 +24,13 @@ public class Address {
         this.name = name;
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "Address{" +
+                "name='" + name + '\'' +
+                ", id=" + id +
+                '}';
+    }
 }
 

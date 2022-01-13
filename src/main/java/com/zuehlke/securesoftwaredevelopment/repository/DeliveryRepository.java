@@ -2,6 +2,8 @@ package com.zuehlke.securesoftwaredevelopment.repository;
 
 import com.zuehlke.securesoftwaredevelopment.domain.DeliveryDetail;
 import com.zuehlke.securesoftwaredevelopment.domain.ViewableDelivery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -11,7 +13,9 @@ import java.util.List;
 
 @Repository
 public class DeliveryRepository {
-    private DataSource dataSource;
+
+    private static final Logger LOG = LoggerFactory.getLogger(DeliveryRepository.class);
+    private final DataSource dataSource;
 
     public DeliveryRepository(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -30,7 +34,7 @@ public class DeliveryRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn("Getting all deliveries failed");
         }
         return deliveries;
     }
@@ -60,7 +64,7 @@ public class DeliveryRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn(String.format("Getting delivery failed for delivery with id %s", id));
         }
         return null;
     }
@@ -74,15 +78,21 @@ public class DeliveryRepository {
              ResultSet rs = statement.executeQuery(sqlQuery)) {
 
             while (rs.next()) {
-                details.add(createDetail(rs));
+                tryToAddNewDeliveryDetails(details, rs);
             }
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOG.warn(String.format("Getting delivery details failed for delivery with id %s", id));
         }
         return details;
     }
 
+    private void tryToAddNewDeliveryDetails(List<DeliveryDetail> deliveryDetails, ResultSet rs) {
+        try {
+            deliveryDetails.add(createDetail(rs));
+        } catch (SQLException e) {
+            LOG.warn("Creating delivery detail from result set failed");
+        }
+    }
 
     private DeliveryDetail createDetail(ResultSet rs) throws SQLException {
         int id = rs.getInt(1);
@@ -94,17 +104,17 @@ public class DeliveryRepository {
 
     }
 
-    public int calculateSum(List<DeliveryDetail> details){
+    public int calculateSum(List<DeliveryDetail> details) {
         int sum = 0;
-        for(DeliveryDetail detail: details){
-            sum+= detail.getPrice() * detail.getAmount();
+        for (DeliveryDetail detail : details) {
+            sum += detail.getPrice() * detail.getAmount();
         }
         return sum;
     }
 
 
-    public List<ViewableDelivery> search(String searchQuery) throws SQLException {
-        List<ViewableDelivery> cars = new ArrayList<>();
+    public List<ViewableDelivery> search(String searchQuery) {
+        List<ViewableDelivery> deliveries = new ArrayList<>();
         String sqlQuery =
                 "SELECT d.id, d.isDone, d.date, d.comment, u.username, r.name, rt.name, a.name FROM delivery AS d JOIN users AS u ON d.userId = u.id JOIN restaurant as r ON d.restaurantId = r.id JOIN address AS a ON d.addressId = a.id JOIN restaurant_type AS rt ON r.typeId= rt.id" +
                         " WHERE UPPER(d.comment) LIKE UPPER('%" + searchQuery + "%')"
@@ -116,10 +126,22 @@ public class DeliveryRepository {
              Statement statement = connection.createStatement();
              ResultSet rs = statement.executeQuery(sqlQuery)) {
             while (rs.next()) {
-                cars.add(createDelivery(rs));
+                tryToAddNewDelivery(deliveries, rs);
             }
+            LOG.info("Searched successfully for {}", searchQuery);
+        } catch (SQLException exception) {
+            LOG.warn("Search delivery failed");
         }
-        return cars;
+        return deliveries;
     }
+
+    private void tryToAddNewDelivery(List<ViewableDelivery> viewableDeliveries, ResultSet rs) {
+        try {
+            viewableDeliveries.add(createDelivery(rs));
+        } catch (SQLException e) {
+            LOG.warn("Creating viewable delivery from result set failed");
+        }
+    }
+
 
 }

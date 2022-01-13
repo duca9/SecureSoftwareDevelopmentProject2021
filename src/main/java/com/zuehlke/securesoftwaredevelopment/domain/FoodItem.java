@@ -1,8 +1,10 @@
 package com.zuehlke.securesoftwaredevelopment.domain;
 
 public class FoodItem {
-    private Integer amount;
+    private Integer id;
     private Integer foodId;
+    private Integer amount;
+    private Integer deliveryId;
 
     public FoodItem(Integer amount, Integer foodId) {
         this.amount = amount;
@@ -23,5 +25,31 @@ public class FoodItem {
 
     public void setFoodId(Integer foodId) {
         this.foodId = foodId;
+    }
+
+    public Integer getDeliveryId() {
+        return deliveryId;
+    }
+
+    public void setDeliveryId(Integer deliveryId) {
+        this.deliveryId = deliveryId;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "FoodItem{" +
+                "id=" + id +
+                ", foodId=" + foodId +
+                ", amount=" + amount +
+                ", deliveryId=" + deliveryId +
+                '}';
     }
 }
