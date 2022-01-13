@@ -18,10 +18,11 @@ public class CorsFilter implements Filter {
     //You can include more than one origin here
     private final List<String> allowedOrigins = Arrays.asList("http://localhost:3000");
 
+    @Override
     public void destroy() {
-
     }
 
+   @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         // Lets make sure that we are working with HTTP (that is, against HttpServletRequest and HttpServletResponse objects)
         if (req instanceof HttpServletRequest && res instanceof HttpServletResponse) {
@@ -50,6 +51,7 @@ public class CorsFilter implements Filter {
         chain.doFilter(req, res);
     }
 
+    @Override
     public void init(FilterConfig filterConfig) {
     }
 }
